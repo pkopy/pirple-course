@@ -9,8 +9,10 @@ const http = require('http');
 const https = require('https')
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
-const config = require('./config');
+const config = require('./lib/config');
 const fs = require('fs');
+const handlers = require('./lib/handlers')
+const helpers = require('./lib/helpers')
 
 
 
@@ -81,7 +83,7 @@ const unifiedServer = (req, res) => {
             'queryStringObject' : queryStringObject,
             'method' : method,
             'headers' : headers,
-            'payload' : buffer
+            'payload' : helpers.parseJsonToObject(buffer)
             
         };
         
@@ -98,7 +100,7 @@ const unifiedServer = (req, res) => {
             //Send the response
             res.setHeader('Content-Type','application/json')
             res.writeHead(statusCode)
-            res.end(payload)
+            res.end(payloadString)
             
             //Log the request path
             console.log('return', statusCode, payloadString)
@@ -109,26 +111,10 @@ const unifiedServer = (req, res) => {
     });
 }
 
-//Define handlers
 
-let handlers = {}
-
-handlers.sample = (data, callback) => {
-//Callback a http status code, and a payload object
-    callback(406, {'name':'sample handler'})
-}
-
-handlers.ping = (data, callback) => {
-    callback(200)
-}
-
-
-
-handlers.notFound = (data, callback) => {
-    callback(404);
-}
 //Define a request router
 let router = {
     'sample' : handlers.sample,
     'ping' : handlers.ping,
+    'users' : handlers.users
 }
